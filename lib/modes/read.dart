@@ -6,7 +6,7 @@ class ReadPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF363D46),
+      backgroundColor: const Color.fromARGB(255, 28, 101, 8),
       body: GestureDetector(
         onDoubleTap: () {
           Navigator.pop(context);

@@ -7,7 +7,7 @@ class TalkPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF363D46),
+      backgroundColor: const Color.fromARGB(255, 0, 106, 244),
       body: GestureDetector(
         onDoubleTap: () {
           Navigator.pop(context);
