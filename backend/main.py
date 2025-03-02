@@ -8,7 +8,7 @@ from yolo_model import yolo_detect
 
 app = FastAPI()
 
-UPLOAD_FOLDER = "uploads/"  # Fotoğrafların kaydedileceği klasör
+UPLOAD_FOLDER = "uploads/"  
 
 @app.post("/upload-image/")
 async def upload_image(file: UploadFile = File(...)):

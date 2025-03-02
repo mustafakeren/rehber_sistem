@@ -17,6 +17,12 @@ class _ImageCaptureState extends State<ImageCapture> {
   File? _takenImage;
   String? detectedObject;
 
+  @override
+  void initState() {
+    super.initState();
+    _takePicture(); // Uygulama açıldığında otomatik olarak kamera başlatılır
+  }
+
   // Fotoğraf çekme fonksiyonu
   void _takePicture() async {
     final imagePicker = ImagePicker();
@@ -65,29 +71,30 @@ class _ImageCaptureState extends State<ImageCapture> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _takenImage != null
-            ? Image.file(
-                _takenImage!,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: 250,
+    return Scaffold(
+      body: Center(
+        child: _takenImage != null
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.file(
+                    _takenImage!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 600,
+                  ),
+                  const SizedBox(height: 20),
+                  detectedObject != null
+                      ? Text(
+                          "Tespit Edilen: $detectedObject",
+                          style:
+                              const TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontSize: 18),
+                        )
+                      : const SizedBox(),
+                ],
               )
-            : TextButton.icon(
-                icon: const Icon(Icons.camera),
-                label: const Text('Capture Image'),
-                onPressed: _takePicture,
-              ),
-        const SizedBox(height: 20),
-        detectedObject != null
-            ? Text(
-                "Tespit Edilen: $detectedObject",
-                style: const TextStyle(color: Colors.white, fontSize: 18),
-              )
-            : const SizedBox(),
-      ],
+            : const CircularProgressIndicator(), // Kamera açılırken yüklenme göstergesi
+      ),
     );
   }
 }
