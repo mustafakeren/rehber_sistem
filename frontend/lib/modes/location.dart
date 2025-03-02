@@ -59,7 +59,7 @@ class _LocationPageState extends State<LocationPage> {
     print('Current location: ($lat, $lng)'); // Debug print
 
     // Geocode API ile adres alma
-    final url = Uri.parse('https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=AIzaSyBzgLjpSxe5KosFZGl-h-9kcuZQZJbZ1gw');
+    final url = Uri.parse('https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=API_KEY');
     final response = await http.get(url);
     final resData = json.decode(response.body);
     final address = resData['results'][0]['formatted_address'];
