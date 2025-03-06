@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:image/image.dart' as img;
+import 'package:flutter_tts/flutter_tts.dart';
 
 class ImageCapture extends StatefulWidget {
   const ImageCapture({super.key});
@@ -18,6 +19,7 @@ class _ImageCaptureState extends State<ImageCapture> {
   List<CameraDescription>? _cameras;
   String? detectedObject;
   Timer? _timer;
+  final FlutterTts flutterTts = FlutterTts();
 
   @override
   void initState() {
@@ -120,6 +122,7 @@ class _ImageCaptureState extends State<ImageCapture> {
         if (response.statusCode == 200) {
           var jsonData = json.decode(responseData);
           detectedObject = jsonData['detected_objects']['detected_object'] ?? "Nesne tespit edilemedi.";
+          _speakDetectedObject(detectedObject!);
         } else {
           detectedObject = "Hata oluştu.";
         }
@@ -131,10 +134,15 @@ class _ImageCaptureState extends State<ImageCapture> {
     }
   }
 
+  Future<void> _speakDetectedObject(String text) async {
+    await flutterTts.speak(text);
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
     _cameraController?.dispose();
+    flutterTts.stop();
     super.dispose();
   }
 
