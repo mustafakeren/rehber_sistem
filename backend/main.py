@@ -3,17 +3,16 @@ from fastapi import FastAPI, File, UploadFile
 from PIL import Image
 import io
 import numpy as np
-import shutil
 from yolo_model import yolo_detect
 
 app = FastAPI()
 
-UPLOAD_FOLDER = "uploads/"  
+UPLOAD_FOLDER = "uploads/"
 
 @app.post("/upload-image/")
 async def upload_image(file: UploadFile = File(...)):
     """
-    Bir görsel dosyasini alir, kaydeder ve YOLO ile analiz eder.
+    Bir görsel dosyasını alır, kaydeder ve YOLO ile analiz eder.
     """
     try:
         # Klasör yoksa oluştur
@@ -24,7 +23,7 @@ async def upload_image(file: UploadFile = File(...)):
         image = Image.open(io.BytesIO(contents)).convert("RGB")
 
         # Dosyayı kaydet
-        file_path = f"{UPLOAD_FOLDER}{file.filename}"
+        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
         image.save(file_path)
 
         # Görseli numpy array formatına çevir
