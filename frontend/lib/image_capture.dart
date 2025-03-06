@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:rehber_sistem/camera_design.dart';
 
 class ImageCapture extends StatefulWidget {
   const ImageCapture({super.key});
@@ -25,6 +26,7 @@ class _ImageCaptureState extends State<ImageCapture> {
   void initState() {
     super.initState();
     _initializeCamera();
+    _initializeTTS();
   }
 
   Future<void> _initializeCamera() async {
@@ -57,6 +59,10 @@ class _ImageCaptureState extends State<ImageCapture> {
         detectedObject = "Kamera başlatma hatası: $e";
       });
     }
+  }
+
+  void _initializeTTS() async {
+    await flutterTts.setLanguage("tr-TR");
   }
 
   void _startTakingPictures() {
@@ -153,25 +159,9 @@ class _ImageCaptureState extends State<ImageCapture> {
         onDoubleTap: () {
           Navigator.pop(context);
         },
-        child: Center(
-          child: _cameraController == null || !_cameraController!.value.isInitialized
-              ? const CircularProgressIndicator()
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      height: 300,
-                      child: CameraPreview(_cameraController!),
-                    ),
-                    const SizedBox(height: 20),
-                    detectedObject != null
-                        ? Text(
-                            "Tespit Edilen: $detectedObject",
-                            style: const TextStyle(color: Colors.black, fontSize: 18),
-                          )
-                        : const CircularProgressIndicator(),
-                  ],
-                ),
+        child: CameraDesign(
+          cameraController: _cameraController,
+          detectedObject: detectedObject,
         ),
       ),
     );
