@@ -4,13 +4,15 @@ def yolo_detect(frame, target_object=None, confidence_threshold=0.7):
     """
     YOLO modelini kullanarak nesne tespiti yapar.
     - frame: Görsel numpy array formatında
-    - target_object: İstenilen nesne türü (ör. "chair", "table")
+    - target_object: İstenilen nesne türü (Ör. "chair", "table")
     - confidence_threshold: Doğruluk eşiği
     """
     model = YOLO("yolo11n.pt")  # YOLO model dosyasını yükle
 
     # YOLO ile tahmin yap
     results = model.predict(source=frame, show=False, save=False)
+
+    detected_objects = []
 
     # Tespit edilen nesneleri işle
     for result in results:
@@ -20,6 +22,9 @@ def yolo_detect(frame, target_object=None, confidence_threshold=0.7):
 
             # Doğruluk eşiği ve istenen nesne kontrolü
             if confidence >= confidence_threshold and (target_object is None or model.names[int(cls)] == target_object):
-                return model.names[int(cls)], confidence
+                detected_objects.append({
+                    "detected_object": model.names[int(cls)],
+                    "confidence": confidence.item()  # Convert to a standard Python type
+                })
 
-    return None, 0.0  # Eğer hiçbir şey tespit edilmezse
+    return detected_objects

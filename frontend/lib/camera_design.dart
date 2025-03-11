@@ -3,12 +3,12 @@ import 'package:camera/camera.dart';
 
 class CameraDesign extends StatelessWidget {
   final CameraController? cameraController;
-  final String? detectedObject;
+  final List<String>? detectedObjects;
 
   const CameraDesign({
     Key? key,
     required this.cameraController,
-    required this.detectedObject,
+    required this.detectedObjects,
   }) : super(key: key);
 
   @override
@@ -21,12 +21,14 @@ class CameraDesign extends StatelessWidget {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                    CameraPreview(cameraController!),
+                  CameraPreview(cameraController!),
                   const SizedBox(height: 10), // Adjust the height to move the text higher
-                  detectedObject != null
-                      ? Text(
-                          "Tespit Edilen: $detectedObject",
-                          style: const TextStyle(color: Colors.black, fontSize: 18),
+                  detectedObjects != null && detectedObjects!.isNotEmpty
+                      ? Column(
+                          children: detectedObjects!.map((obj) => Text(
+                            "Tespit Edilen: $obj",
+                            style: const TextStyle(color: Colors.black, fontSize: 18),
+                          )).toList(),
                         )
                       : const CircularProgressIndicator(),
                 ],

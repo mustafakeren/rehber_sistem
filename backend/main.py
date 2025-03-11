@@ -47,13 +47,10 @@ async def upload_image(file: UploadFile = File(...)):
         frame = np.array(image)
 
         # YOLO ile nesne tespiti yap
-        detected_object, confidence = yolo_detect(frame, confidence_threshold=0.7)
+        detected_objects = yolo_detect(frame, confidence_threshold=0.7)
 
         return {
-            "detected_objects": {
-                "detected_object": detected_object,
-                "confidence": confidence
-            }
+            "detected_objects": detected_objects
         }
     except Exception as e:
         return {"error": str(e)}

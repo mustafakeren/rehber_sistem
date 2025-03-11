@@ -18,7 +18,7 @@ class ImageCapture extends StatefulWidget {
 class _ImageCaptureState extends State<ImageCapture> {
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
-  String? detectedObject;
+  List<String>? detectedObjects;
   Timer? _timer;
   final FlutterTts flutterTts = FlutterTts();
 
@@ -51,12 +51,12 @@ class _ImageCaptureState extends State<ImageCapture> {
         _startTakingPictures();
       } else {
         setState(() {
-          detectedObject = "Arka kamera bulunamadı.";
+          detectedObjects = ["Arka kamera bulunamadı."];
         });
       }
     } catch (e) {
       setState(() {
-        detectedObject = "Kamera başlatma hatası: $e";
+        detectedObjects = ["Kamera başlatma hatası: $e"];
       });
     }
   }
@@ -80,13 +80,13 @@ class _ImageCaptureState extends State<ImageCapture> {
       final XFile image = await _cameraController!.takePicture();
 
       setState(() {
-        detectedObject = "Görsel işleniyor...";
+        detectedObjects = ["Görsel işleniyor..."];
       });
 
       await _rotateAndUploadImage(File(image.path));
     } catch (e) {
       setState(() {
-        detectedObject = "Fotoğraf çekme hatası: $e";
+        detectedObjects = ["Fotoğraf çekme hatası: $e"];
       });
     }
   }
@@ -107,7 +107,7 @@ class _ImageCaptureState extends State<ImageCapture> {
       await _uploadImage(rotatedImageFile);
     } catch (e) {
       setState(() {
-        detectedObject = "Görsel döndürme hatası: $e";
+        detectedObjects = ["Görsel döndürme hatası: $e"];
       });
     }
   }
@@ -127,21 +127,38 @@ class _ImageCaptureState extends State<ImageCapture> {
       setState(() {
         if (response.statusCode == 200) {
           var jsonData = json.decode(responseData);
-          detectedObject = jsonData['detected_objects']['detected_object'] ?? "Nesne tespit edilemedi.";
-          _speakDetectedObject(detectedObject!);
+          List<String> detectedObjectsList = [];
+
+          if (jsonData['detected_objects'] is List) {
+            for (var obj in jsonData['detected_objects']) {
+              if (obj is Map) {
+                detectedObjectsList.add(obj['detected_object']);
+              } else {
+                detectedObjectsList.add(obj.toString());
+              }
+            }
+          }
+
+          if (detectedObjectsList.isNotEmpty) {
+            detectedObjects = detectedObjectsList;
+            _speakDetectedObject(detectedObjectsList);
+          } else {
+            detectedObjects = ["Nesne tespit edilemedi."];
+          }
         } else {
-          detectedObject = "Hata oluştu.";
+          detectedObjects = ["Hata oluştu."];
         }
       });
     } catch (e) {
       setState(() {
-        detectedObject = "Görsel yükleme hatası: $e";
+        detectedObjects = ["Görsel yükleme hatası: $e"];
       });
     }
   }
 
-  Future<void> _speakDetectedObject(String text) async {
-    await flutterTts.speak(text);
+  Future<void> _speakDetectedObject(List<String> objects) async {
+    String objectsToSpeak = objects.join(", ");
+    await flutterTts.speak(objectsToSpeak);
   }
 
   @override
@@ -161,7 +178,7 @@ class _ImageCaptureState extends State<ImageCapture> {
         },
         child: CameraDesign(
           cameraController: _cameraController,
-          detectedObject: detectedObject,
+          detectedObjects: detectedObjects,
         ),
       ),
     );
