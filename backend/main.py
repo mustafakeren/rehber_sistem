@@ -1,4 +1,5 @@
 import os
+import shutil
 from fastapi import FastAPI, File, UploadFile
 from PIL import Image
 import io
@@ -9,6 +10,19 @@ app = FastAPI()
 
 UPLOAD_FOLDER = "uploads/"
 
+def clear_uploads_folder():
+    for filename in os.listdir(UPLOAD_FOLDER):
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+                print("Deleted", file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+                print("Deleted directory", file_path)
+        except Exception as e:
+            print(f'Failed to delete {file_path}. Reason: {e}')
+
 @app.post("/upload-image/")
 async def upload_image(file: UploadFile = File(...)):
     """
@@ -17,6 +31,9 @@ async def upload_image(file: UploadFile = File(...)):
     try:
         # Klasör yoksa oluştur
         os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+        # Klasörü temizle
+        clear_uploads_folder()
 
         # Dosyayı oku
         contents = await file.read()
