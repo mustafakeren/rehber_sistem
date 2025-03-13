@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:rehber_sistem/modes/notifier/detected_objects_notifier.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class CameraDesign extends StatefulWidget {
   final CameraController? cameraController;
@@ -15,6 +16,34 @@ class CameraDesign extends StatefulWidget {
 }
 
 class _CameraDesignState extends State<CameraDesign> {
+  final FlutterTts flutterTts = FlutterTts();
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeTTS();
+    DetectedObjectsNotifier.detectedObjects.addListener(_speakDetectedObjects);
+  }
+
+  @override
+  void dispose() {
+    DetectedObjectsNotifier.detectedObjects.removeListener(_speakDetectedObjects);
+    flutterTts.stop();
+    super.dispose();
+  }
+
+  void _initializeTTS() async {
+    await flutterTts.setLanguage("tr-TR");
+  }
+
+  void _speakDetectedObjects() async {
+    List<String> detectedObjects = DetectedObjectsNotifier.detectedObjects.value;
+    if (detectedObjects.isNotEmpty && detectedObjects[0] != "Görsel işleniyor...") {
+      String textToSpeak = detectedObjects.join(", ");
+      await flutterTts.speak(textToSpeak);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

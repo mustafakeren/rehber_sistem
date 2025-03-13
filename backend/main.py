@@ -1,9 +1,10 @@
 import os
 import shutil
+import cv2
+import numpy as np
+import io
 from fastapi import FastAPI, File, UploadFile
 from PIL import Image
-import io
-import numpy as np
 from yolo_model import yolo_detect
 
 app = FastAPI()
@@ -29,28 +30,27 @@ async def upload_image(file: UploadFile = File(...)):
     Bir görsel dosyasını alır, kaydeder ve YOLO ile analiz eder.
     """
     try:
-        # Klasör yoksa oluştur
         os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-        # Klasörü temizle
         clear_uploads_folder()
 
-        # Dosyayı oku
+        # Dosyayı oku ve PIL formatına çevir
         contents = await file.read()
         image = Image.open(io.BytesIO(contents)).convert("RGB")
 
-        # Dosyayı kaydet
-        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-        image.save(file_path)
-
         # Görseli numpy array formatına çevir
         frame = np.array(image)
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)  # OpenCV formatına çevir
 
         # YOLO ile nesne tespiti yap
-        detected_objects = yolo_detect(frame, confidence_threshold=0.7)
+        detected_objects = yolo_detect(frame, confidence_threshold=0.5)
+
+        # Get image dimensions
+        image_height, image_width, _ = frame.shape
 
         return {
-            "detected_objects": detected_objects
+            "detected_objects": detected_objects,
+            "image_width": image_width,
+            "image_height": image_height
         }
     except Exception as e:
         return {"error": str(e)}

@@ -65,7 +65,7 @@ class _ImageCaptureState extends State<ImageCapture> {
   }
 
   void _startTakingPictures() {
-    _timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
       _takePicture();
     });
   }
@@ -111,7 +111,87 @@ class _ImageCaptureState extends State<ImageCapture> {
     if (response.containsKey("error")) {
       DetectedObjectsNotifier.detectedObjects.value = [response["error"]];
     } else {
-      widget.onResponse(response);
+      _handleResponse(response);
+    }
+  }
+
+  void _handleResponse(Map<String, dynamic> response) {
+    print("Handling response: $response"); // Debug print
+    if (response['detected_objects'] is List) {
+      List<String> detectedObjectsList = (response['detected_objects'] as List<dynamic>)
+          .map((obj) => obj is Map ? obj['detected_object'] as String : obj.toString())
+          .toList();
+
+      // Count the occurrences of each object
+      Map<String, int> objectCounts = {};
+      for (var obj in detectedObjectsList) {
+        objectCounts[obj] = (objectCounts[obj] ?? 0) + 1;
+      }
+
+      // Convert the counts to a list of strings
+      List<String> countedObjects = objectCounts.entries
+          .map((entry) => "${entry.value} ${entry.key}${entry.value > 1 ? 's' : ''}")
+          .toList();
+
+      // Get the image dimensions from the response
+      int imageWidth = response['image_width'];
+      int imageHeight = response['image_height'];
+
+      // Detect object locations
+      List<String> objectsWithLocations = _detectObjectLocations(response['detected_objects'], imageWidth, imageHeight);
+
+      print("Counted objects: $countedObjects"); // Debug print
+      print("Objects with locations: $objectsWithLocations"); // Debug print
+
+      DetectedObjectsNotifier.detectedObjects.value = countedObjects + objectsWithLocations;
+    } else {
+      DetectedObjectsNotifier.detectedObjects.value = ["Nesne tespit edilemedi."];
+    }
+  }
+
+ List<String> _detectObjectLocations(List<dynamic> detectedObjects, int imageWidth, int imageHeight) {
+  List<String> objectsWithLocations = [];
+
+  for (var obj in detectedObjects) {
+    print("Processing object: $obj"); // Debug print
+    if (obj is Map && obj.containsKey('bounding_box')) {
+      List<double> bbox = List<double>.from(obj['bounding_box']);
+
+      double xCenter = (bbox[0] + bbox[2]) / 2;
+      double yCenter = (bbox[1] + bbox[3]) / 2;
+
+      double xNorm = xCenter / imageWidth;
+      double yNorm = yCenter / imageHeight;
+
+      String location = _getLocationDescription({'x': xNorm, 'y': yNorm});
+
+      print("Detected object: ${obj['detected_object']} at $location"); // Debug print
+      objectsWithLocations.add("${obj['detected_object']} at $location");
+    } else {
+      print("Object does not have location: $obj"); // Debug print
+    }
+  }
+
+  return objectsWithLocations;
+}
+
+
+  String _getLocationDescription(Map<String, dynamic> location) {
+    double x = location['x'];
+    double y = location['y'];
+
+    if (x < 0.33) {
+      if (y < 0.33) return "top-left";
+      if (y > 0.66) return "bottom-left";
+      return "left";
+    } else if (x > 0.66) {
+      if (y < 0.33) return "top-right";
+      if (y > 0.66) return "bottom-right";
+      return "right";
+    } else {
+      if (y < 0.33) return "top";
+      if (y > 0.66) return "bottom";
+      return "center";
     }
   }
 

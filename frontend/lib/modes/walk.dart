@@ -13,9 +13,22 @@ class _WalkPageState extends State<WalkPage> {
   void _handleResponse(Map<String, dynamic> response) {
     // Process the response for walk mode
     if (response['detected_objects'] is List) {
-      DetectedObjectsNotifier.detectedObjects.value = (response['detected_objects'] as List<dynamic>)
+      List<String> detectedObjectsList = (response['detected_objects'] as List<dynamic>)
           .map((obj) => obj is Map ? obj['detected_object'] as String : obj.toString())
           .toList();
+
+      // Count the occurrences of each object
+      Map<String, int> objectCounts = {};
+      for (var obj in detectedObjectsList) {
+        objectCounts[obj] = (objectCounts[obj] ?? 0) + 1;
+      }
+
+      // Convert the counts to a list of strings
+      List<String> countedObjects = objectCounts.entries
+          .map((entry) => "${entry.value} ${entry.key}${entry.value > 1 ? 's' : ''}")
+          .toList();
+
+      DetectedObjectsNotifier.detectedObjects.value = countedObjects;
     } else {
       DetectedObjectsNotifier.detectedObjects.value = ["Nesne tespit edilemedi."];
     }
