@@ -166,7 +166,7 @@ class _LocationPageState extends State<LocationPage> {
     double x = cos(lat1 * pi / 180) * sin(lat2 * pi / 180) -
         sin(lat1 * pi / 180) * cos(lat2 * pi / 180) * cos(dLon);
     double bearing = atan2(y, x) * 180 / pi;
-    return (bearing + 360) % 360; // Normalize to 0-360
+    return (bearing + 360) % 360; 
   }
 
   void _getAddressFromLatLng(double latitude, double longitude) async {
