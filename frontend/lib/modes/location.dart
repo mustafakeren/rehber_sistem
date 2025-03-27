@@ -3,9 +3,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart' as loc;
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:flutter_compass/flutter_compass.dart';
-import 'dart:math' show asin, atan2, cos, pi, sin, sqrt;
-import 'dart:async';
+import 'dart:math' show cos, sqrt, asin;
+import 'dart:async'; // Import for StreamSubscription
 
 class LocationPage extends StatefulWidget {
   const LocationPage({super.key});
@@ -22,77 +21,16 @@ class _LocationPageState extends State<LocationPage> {
   final FlutterTts flutterTts = FlutterTts();
   StreamSubscription? _compassSubscription; // Add a subscription variable
 
-  // List of places with their coordinates and messages
-  final List<Map<String, dynamic>> places = [
-    {
-      "name": "Faculty of Engineering",
-      "coordinates": LatLng(39.890437801682175, 32.65820345375549),
-      "message": "Mühendislik fakültesine yakınsınız",
-    },
-    {
-      "name": "Library",
-      "coordinates": LatLng(39.887469, 32.657175),
-      "message": "Kütüphaneye yakınsınız",
-    },
-    {
-      "name": "Foreign Languages ​​Building",
-      "coordinates": LatLng(39.888294, 32.655490),
-      "message": "Yabancı diller binasına yakınsınız",
-    },
-    {
-      "name": "Bus Stops",
-      "coordinates": LatLng(39.890264, 32.653754),
-      "message": "Otobüs duraklarına yakınsınız",
-    },
-    {
-      "name": "Faculty of Fine Arts",
-      "coordinates": LatLng(39.888315, 32.653456),
-      "message": "Güzel sanatlar fakültesine yakınsınız",
-    },
-    {
-      "name": "Faculty of Dentistry",
-      "coordinates": LatLng(39.888177, 32.651295),
-      "message": "Diş Hekimliği fakültesine yakınsınız",
-    },
-    {
-      "name": "Faculty of Medicine and Pharmacy",
-      "coordinates": LatLng(39.887636, 32.652367),
-      "message": "Tıp ve Eczacılık fakültesine yakınsınız",
-    },
-    {
-      "name": "Faculty of Education",
-      "coordinates": LatLng(39.887093, 32.651729),
-      "message": "Eğitim fakültesine yakınsınız",
-    },
-    {
-      "name": "Faculty of Law and Communication",
-      "coordinates": LatLng(39.886348, 32.653399),
-      "message":
-          "Hukuk ve İletişim fakültesine yakınsınız. Öğrenci işleri binasına da buradan ulaşabilirsiniz.",
-    },
-    {
-      "name": "Rectorship Building",
-      "coordinates": LatLng(39.88604471325193, 32.65204374564296),
-      "message": "Rektörlük binasına yakınsınız.",
-    },
-  ];
+  // Coordinates of the Faculty of Engineering at Başkent University
+  final LatLng facultyOfEngineering = LatLng(
+    39.890437801682175,
+    32.65820345375549,
+  );
 
   @override
   void initState() {
     super.initState();
     _getCurrentLocation();
-    _listenToCompass();
-  }
-
-  void _listenToCompass() {
-    _compassSubscription = FlutterCompass.events?.listen((event) {
-      if (mounted) {
-        // Check if the widget is still mounted
-        setState(() {
-          userHeading = event.heading; // Update user's heading
-        });
-      }
-    });
   }
 
   void _getCurrentLocation() async {
@@ -149,42 +87,6 @@ class _LocationPageState extends State<LocationPage> {
         cos((lat2 - lat1) * p) / 2 +
         cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
     return 12742 * asin(sqrt(a)) * 1000; // 2 * R; R = 6371 km
-  }
-
-  String _getRelativeDirection(
-    double userLat,
-    double userLon,
-    double placeLat,
-    double placeLon,
-  ) {
-    if (userHeading == null) return "bilinmeyen";
-
-    // Calculate the bearing to the place
-    double bearing = _calculateBearing(userLat, userLon, placeLat, placeLon);
-
-    // Calculate the relative direction
-    double relativeBearing = (bearing - userHeading!) % 360;
-    if (relativeBearing < 0) relativeBearing += 360;
-
-    if (relativeBearing >= 315 || relativeBearing < 45) {
-      return "önünüzde";
-    } else if (relativeBearing >= 45 && relativeBearing < 135) {
-      return "sağınızda";
-    } else if (relativeBearing >= 135 && relativeBearing < 225) {
-      return "arkanızda";
-    } else {
-      return "solunuzda";
-    }
-  }
-
-  double _calculateBearing(double lat1, double lon1, double lat2, double lon2) {
-    double dLon = (lon2 - lon1) * pi / 180;
-    double y = sin(dLon) * cos(lat2 * pi / 180);
-    double x =
-        cos(lat1 * pi / 180) * sin(lat2 * pi / 180) -
-        sin(lat1 * pi / 180) * cos(lat2 * pi / 180) * cos(dLon);
-    double bearing = atan2(y, x) * 180 / pi;
-    return (bearing + 360) % 360;
   }
 
   void _getAddressFromLatLng(double latitude, double longitude) async {
@@ -259,13 +161,13 @@ class _LocationPageState extends State<LocationPage> {
                             snippet: countryName,
                           ),
                         ),
-                        ...places.map((place) {
-                          return Marker(
-                            markerId: MarkerId(place["name"]),
-                            position: place["coordinates"],
-                            infoWindow: InfoWindow(title: place["name"]),
-                          );
-                        }).toSet(),
+                        Marker(
+                          markerId: MarkerId('facultyOfEngineering'),
+                          position: facultyOfEngineering,
+                          infoWindow: InfoWindow(
+                            title: 'Faculty of Engineering',
+                          ),
+                        ),
                       },
                     ),
                     if (countryName != null)
