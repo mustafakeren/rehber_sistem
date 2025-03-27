@@ -81,8 +81,16 @@ async def analyze_gesture(file: UploadFile = File(...)):
         frame = np.array(image)
 
         # DeepFace ile yüz analizi yap
-        analysis = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=True)
+        analysis = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False)
 
-        return {"emotion": analysis["dominant_emotion"]}
+        # Handle multiple faces
+        if isinstance(analysis, list):
+            print(f"Multiple faces detected: {len(analysis)}")  # Debug log
+            dominant_emotions = [result["dominant_emotion"] for result in analysis]
+            return {"emotions": dominant_emotions}
+        else:
+            print(f"Single face detected")  # Debug log
+            return {"emotion": analysis["dominant_emotion"]}
     except Exception as e:
+        print(f"Error in analyze_gesture: {e}")  # Debug log
         return {"error": str(e)}

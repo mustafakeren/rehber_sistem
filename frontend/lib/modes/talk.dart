@@ -48,7 +48,7 @@ class _TalkPageState extends State<TalkPage> {
   }
 
   void _startFrameCapture() {
-    _frameTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+    _frameTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!_isSending) {
         _captureAndSendFrame();
       }

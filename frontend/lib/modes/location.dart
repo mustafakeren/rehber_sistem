@@ -21,6 +21,13 @@ class _LocationPageState extends State<LocationPage> {
   final FlutterTts flutterTts = FlutterTts();
   StreamSubscription? _compassSubscription; // Add a subscription variable
 
+  // Define a list of places with their names and coordinates
+  final List<Map<String, dynamic>> places = [
+    {"name": "Library", "coordinates": LatLng(39.891234, 32.657890)},
+    {"name": "Cafeteria", "coordinates": LatLng(39.892345, 32.659012)},
+    {"name": "Gym", "coordinates": LatLng(39.893456, 32.660123)},
+  ];
+
   // Coordinates of the Faculty of Engineering at Başkent University
   final LatLng facultyOfEngineering = LatLng(
     39.890437801682175,
@@ -110,6 +117,22 @@ class _LocationPageState extends State<LocationPage> {
     await flutterTts.setLanguage("tr-TR");
     await flutterTts.setSpeechRate(0.5);
     await flutterTts.speak(message);
+  }
+
+  String _getRelativeDirection(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    double deltaLat = lat2 - lat1;
+    double deltaLon = lon2 - lon1;
+
+    if (deltaLat.abs() > deltaLon.abs()) {
+      return deltaLat > 0 ? "Kuzeyde" : "Güneyde";
+    } else {
+      return deltaLon > 0 ? "Doğuda" : "Batıda";
+    }
   }
 
   Future<void> _speakLocation() async {
