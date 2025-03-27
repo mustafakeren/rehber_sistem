@@ -72,7 +72,7 @@ class _ImageCaptureState extends State<ImageCapture> {
   }
 
   void _startTakingPictures() {
-    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       _takePicture();
     });
   }

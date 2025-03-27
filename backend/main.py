@@ -7,6 +7,7 @@ from fastapi import FastAPI, File, UploadFile
 from PIL import Image
 from yolo_model import yolo_detect
 import pytesseract
+from deepface import DeepFace  # Import DeepFace for facial analysis
 
 app = FastAPI()
 
@@ -66,5 +67,22 @@ async def extract_text(file: UploadFile = File(...)):
         image = Image.open(io.BytesIO(contents)).convert("RGB")
         text = pytesseract.image_to_string(image, lang='tur')
         return {"text": text}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/analyze-gesture/")
+async def analyze_gesture(file: UploadFile = File(...)):
+    """
+    Bir görsel dosyasını alır ve DeepFace ile yüz analizi yapar.
+    """
+    try:
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
+        frame = np.array(image)
+
+        # DeepFace ile yüz analizi yap
+        analysis = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=True)
+
+        return {"emotion": analysis["dominant_emotion"]}
     except Exception as e:
         return {"error": str(e)}
